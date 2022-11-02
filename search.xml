@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>hello world</title>
+    <url>/2022/11/02/hello/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+<p>这是一个测试的文章页面</p>
+</blockquote>
+<span id="more"></span>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">symbols_count_time:</span><br><span class="line">  symbols: true <span class="comment">#是否统计字数</span></span><br><span class="line">  time: false <span class="comment">#是否统计阅读时长</span></span><br><span class="line">  total_symbols: true <span class="comment">#是否统计总字数</span></span><br><span class="line">  total_time: false <span class="comment">#是否统计总阅读时长</span></span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>测试</tag>
+      </tags>
+  </entry>
+</search>
