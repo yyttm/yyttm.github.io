@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>hello world</title>
+    <title>我为什么这么喜欢你</title>
     <url>/2022/11/02/hello/</url>
     <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
-<p>这是一个测试的文章页面</p>
+<p>我为什么这么喜欢你？</p>
 </blockquote>
 <span id="more"></span>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">symbols_count_time:</span><br><span class="line">  symbols: true <span class="comment">#是否统计字数</span></span><br><span class="line">  time: false <span class="comment">#是否统计阅读时长</span></span><br><span class="line">  total_symbols: true <span class="comment">#是否统计总字数</span></span><br><span class="line">  total_time: false <span class="comment">#是否统计总阅读时长</span></span><br></pre></td></tr></table></figure>]]></content>
+<p>“喜欢”这件事，不是配料表上的砂糖和水，不是化学公式，我没法告诉你为什么，喜欢你哪里多于别人。</p>
+<p>如果喜欢说得清，那就不是喜欢。</p>
+<p>总有比你好看、比你成熟、比你温柔、比你更知性的人，却都不是你。</p>
+<p>当我想起你，那让我感到快乐。</p>
+<p>这就够了。</p>
+]]></content>
+      <categories>
+        <category>闲杂漫谈</category>
+      </categories>
       <tags>
-        <tag>测试</tag>
+        <tag>情与爱</tag>
       </tags>
   </entry>
 </search>
