@@ -1,0 +1,378 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>Hadoop学习案例——Map Reduce设计 好友推荐功能 | 相由心生</title>
+<meta name="description" content="温故而知新">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://yyttm.github.io//favicon.ico?v=1713970146833">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://yyttm.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://yyttm.github.io/">
+        <img class="avatar" src="https://yyttm.github.io//images/avatar.png?v=1713970146833" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://yyttm.github.io/">
+        <h1 class="site-title">相由心生</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">Hadoop学习案例——Map Reduce设计 好友推荐功能</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2024-04-23</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://yyttm.github.io/tag/KiLkkq8ze/">
+                    hadoop
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://yyttm.github.io/tag/t12pGe9M7/">
+                    大数据
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p>文章内容主要以案例为主</p>
+<!--more-->
+<h2 id="项目说明">项目说明</h2>
+<ul>
+<li>互为推荐关系<br>
+- 非好友的两个人之间存在相同好友则互为推荐关系<br>
+- 朋友圈两个非好友的人，存在共同好友人数越多，越值得推荐<br>
+- 存在一个共同好友，值为1；存在多个值累加</li>
+</ul>
+<h2 id="准备数据">准备数据</h2>
+<blockquote>
+<p>数据准备：friend.txt<br>
+链接:<a href="https://yyttm.lanzoub.com/iEX2i1w9xqvi">friend.txt</a></p>
+</blockquote>
+<h2 id="编写map-reduce程序">编写Map Reduce程序</h2>
+<blockquote>
+<p>前置依赖</p>
+</blockquote>
+<pre><code class="language-java"> &lt;!-- Hadoop Core --&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.apache.hadoop&lt;/groupId&gt;
+      &lt;artifactId&gt;hadoop-common&lt;/artifactId&gt;
+      &lt;version&gt;2.7.1&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Hadoop Client for MapReduce --&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.apache.hadoop&lt;/groupId&gt;
+      &lt;artifactId&gt;hadoop-mapreduce-client-core&lt;/artifactId&gt;
+      &lt;version&gt;2.7.1&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Hadoop Client for HDFS --&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.apache.hadoop&lt;/groupId&gt;
+      &lt;artifactId&gt;hadoop-hdfs&lt;/artifactId&gt;
+      &lt;version&gt;2.7.1&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Hadoop Client for YARN (if you are using YARN) --&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.apache.hadoop&lt;/groupId&gt;
+      &lt;artifactId&gt;hadoop-yarn-client&lt;/artifactId&gt;
+      &lt;version&gt;2.7.1&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Hadoop Client for Common Utilities --&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.apache.hadoop&lt;/groupId&gt;
+      &lt;artifactId&gt;hadoop-common&lt;/artifactId&gt;
+      &lt;version&gt;2.7.1&lt;/version&gt;
+    &lt;/dependency&gt;
+</code></pre>
+<blockquote>
+<p>项目目录</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="https://img2.imgtp.com/2024/04/23/28gJuBFi.png" alt="1713886070342.png" loading="lazy"></figure>
+<ol>
+<li>FriendsRecommendMapper</li>
+</ol>
+<pre><code class="language-java">package org.hadoop.mr;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.util.StringUtils;
+
+import java.io.IOException;
+
+public class FriendsRecommendMapper extends Mapper&lt;LongWritable, Text, Text, IntWritable&gt; {
+    Text mkey = new Text();
+    IntWritable mval = new IntWritable();
+
+    @Override
+    protected void map(LongWritable key, Text value, Context context)
+            throws IOException, InterruptedException {
+        //不能用双引号,要用单引号 将传递过来的值进行分割
+        String[] strs = StringUtils.split(value.toString(), ' ');
+        // 直接好友的 key为直接好友列表  value为0
+        for (int i = 1; i &lt; strs.length; i++) {
+            //直接好友关系
+            mkey.set(fof(strs[0], strs[i]));
+            mval.set(0);
+            context.write(mkey, mval);
+            //间接好友关系 设置value为1
+            for (int j = i + 1; j &lt; strs.length; j++) {
+                mkey.set(fof(strs[i], strs[j]));
+                mval.set(1);
+                context.write(mkey, mval);
+            }
+        }
+    }
+
+    //两个共同好友的间接好友之间,可能存在 B C 和C B 的情况,但是比对累加时,计算机不识别,所以需要字典排序
+    private static String fof(String str1, String str2) {
+        //compareTo比较的 正数说明大
+        if (str1.compareTo(str2) &gt; 0) {
+            return str2 + &quot;:&quot; + str1;
+        }
+        return str1 + &quot;:&quot; + str2;
+    }
+}
+</code></pre>
+<ol start="2">
+<li>FriendsRecommendReduce</li>
+</ol>
+<pre><code class="language-java">package org.hadoop.mr;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Reducer;
+
+import java.io.IOException;
+
+public class FriendsRecommendReduce extends Reducer&lt;Text, IntWritable, Text, IntWritable&gt; {
+
+    private IntWritable mValue = new IntWritable();
+
+    @Override
+    protected void reduce(Text key, Iterable&lt;IntWritable&gt; values, Context context) throws IOException, InterruptedException {
+
+        //
+        int flg = 0;
+        int sum = 0;
+        for (IntWritable value : values) {
+            if (value.get() == 0) {// 直接关系
+                flg = 1;
+            }
+            sum += value.get(); // 添加间接权重
+        }
+
+        if (flg == 0) {
+            mValue.set(sum);
+            context.write(key, mValue);
+        }
+    }
+}
+</code></pre>
+<ol start="3">
+<li>FriendsRecommend</li>
+</ol>
+<pre><code class="language-java">package org.hadoop.mr;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+
+import java.io.IOException;
+
+public class FriendsRecommend {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf);
+
+        job.setJarByClass(FriendsRecommend.class);
+
+        Path input = new Path(args[0]);
+        FileInputFormat.addInputPath(job, input);
+
+        Path output = new Path(args[1]);
+        //如果文件存在,,删除文件,方便后续调试代码
+        if (output.getFileSystem(conf).exists(output)) {
+            output.getFileSystem(conf).delete(output,true);
+        }
+
+        FileOutputFormat.setOutputPath(job, output);
+
+        job.setMapperClass(FriendsRecommendMapper.class);
+        job.setMapOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        job.setReducerClass(FriendsRecommendReduce.class);
+
+        job.waitForCompletion(true);
+    }
+}
+</code></pre>
+<h2 id="运行程序">运行程序</h2>
+<ol>
+<li>上传程序至虚拟机</li>
+</ol>
+<ul>
+<li>先把两个文件上传到虚拟机中<br>
+<img src="https://img2.imgtp.com/2024/04/23/4uTmcJ1y.png" alt="1713886006675.png" loading="lazy"></li>
+</ul>
+<ol start="2">
+<li>在HDFS中上传文件</li>
+</ol>
+<ul>
+<li>先在hdfs中创建friend目录</li>
+</ul>
+<pre><code>hdfs dfs -mkdir /usr/hadoop/friend 
+</code></pre>
+<ul>
+<li>将文件上传到HDFS中</li>
+</ul>
+<pre><code>hdfs dfs -put friend.txt friend.jar /usr/hadoop/friend
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://img2.imgtp.com/2024/04/23/LyxPyg9l.png" alt="1713886671174.png" loading="lazy"></figure>
+<ol start="3">
+<li>执行friends.jar程序</li>
+</ol>
+<pre><code>hadoop jar friends.jar org.hadoop.mr.FriendsRecommend /usr/hadoop/friend /usr/hadoop/friend/out
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://img2.imgtp.com/2024/04/23/yjIlKxji.png" alt="1713887026178.png" loading="lazy"></figure>
+<ol start="4">
+<li>查看结果</li>
+</ol>
+<pre><code>hdfs dfs -cat /usr/hadoop/friend/out/part-r-00000
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://img2.imgtp.com/2024/04/23/ldscPURS.png" alt="1713887952544.png" loading="lazy"></figure>
+<!-- more -->
+<!-- more -->
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://yyttm.github.io/post/win1011ding-shi-guan-ji-fang-fa/">
+              <h3 class="post-title">
+                下一篇：win10/11:定时关机方法
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">温故而知新</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/yyttm" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://yyttm.github.io//atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

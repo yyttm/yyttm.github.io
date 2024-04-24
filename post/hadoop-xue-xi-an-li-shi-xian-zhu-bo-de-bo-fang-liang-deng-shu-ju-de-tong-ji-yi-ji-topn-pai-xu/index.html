@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>Hadoop学习案例——实现主播的播放量等数据的统计以及TopN排序 | 相由心生</title>
+<meta name="description" content="温故而知新">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://yyttm.github.io//favicon.ico?v=1713970146833">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://yyttm.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://yyttm.github.io/">
+        <img class="avatar" src="https://yyttm.github.io//images/avatar.png?v=1713970146833" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://yyttm.github.io/">
+        <h1 class="site-title">相由心生</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">Hadoop学习案例——实现主播的播放量等数据的统计以及TopN排序</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2024-04-24</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://yyttm.github.io/tag/KiLkkq8ze/">
+                    hadoop
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://yyttm.github.io/tag/t12pGe9M7/">
+                    大数据
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <!--more-->
+<h2 id="项目流程">项目流程</h2>
+<blockquote>
+<p>数据集准备：video_rating.log<br>
+链接:<a href="https://yyttm.lanzoub.com/iH7tb1wbm0xa">video_rating.log</a></p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="https://img2.imgtp.com/2024/04/24/ltD7WII1.png" alt="1713938991336.png" loading="lazy"></figure>
+<h3 id="创建maven工程项目">创建Maven工程项目</h3>
+<ol>
+<li>创建Maven<br>
+打开idea新建一个项目，选择Maven点击下一步，添加项目名称，路径</li>
+<li>添加依赖<br>
+编辑pom.xml配置文件，添加如下内容，等待自动导入完成(注意修改Hadoop版本号)</li>
+</ol>
+<pre><code class="language-java">		&lt;dependencies&gt;
+        &lt;!-- Hadoop相关依赖包--&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.apache.hadoop&lt;/groupId&gt;
+            &lt;artifactId&gt;hadoop-common&lt;/artifactId&gt;
+            &lt;version&gt;2.7.1&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.apache.hadoop&lt;/groupId&gt;
+            &lt;artifactId&gt;hadoop-hdfs&lt;/artifactId&gt;
+            &lt;version&gt;2.7.1&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.apache.hadoop&lt;/groupId&gt;
+            &lt;artifactId&gt;hadoop-client&lt;/artifactId&gt;
+            &lt;version&gt;2.7.1&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;junit&lt;/groupId&gt;
+            &lt;artifactId&gt;junit&lt;/artifactId&gt;
+            &lt;version&gt;4.12&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+    &lt;build&gt;
+        &lt;plugins&gt;
+            &lt;!-- 打包编译的插件 --&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+                &lt;configuration&gt;
+                    &lt;source&gt;6&lt;/source&gt;
+                    &lt;target&gt;6&lt;/target&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+</code></pre>
+<p>这样一个基本的Hadoop的Maven工程项目就创建完毕了</p>
+<h3 id="编写mapreduce程序">编写MapReduce程序</h3>
+<ol>
+<li>Map类<br>
+map类的作用是对原始数据的清洗操作，解析JSON格式的数据，获取我们所需要的数据在java目录下新建一个DataCleanMap类，继承Mapper类，复写map方法</li>
+</ol>
+<pre><code class="language-java">import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
+import java.io.IOException;
+
+
+public class DataCleanMap extends Mapper&lt;LongWritable, Text, Text, Text&gt; {
+    @Override
+    protected void map(LongWritable k1, Text v1, Context context) throws IOException, InterruptedException {
+        try {
+            String line = v1.toString();//获取每一行内容
+            JSONObject jsonObj = new JSONObject(line); //将字符串转换为JSON格式
+            String id = jsonObj.getString(&quot;uid&quot;); //获取主播的id数据
+
+            int gold = jsonObj.getInt(&quot;gold&quot;);
+            int watchnumpv = jsonObj.getInt(&quot;watchnumpv&quot;);
+            int follower = jsonObj.getInt(&quot;follower&quot;);
+            int length = jsonObj.getInt(&quot;length&quot;);
+            // 过滤掉异常数据（如播放量&lt;0等这些）
+            if (gold &gt;= 0 &amp;&amp; watchnumpv &gt;= 0 &amp;&amp; follower &gt;= 0 &amp;&amp; length &gt;= 0) {
+                // 封装数据到Text中，最后写入context上下文中
+                Text k2 = new Text();
+                k2.set(id);
+                Text v2 = new Text();
+                v2.set(gold + &quot;\t&quot; + watchnumpv + &quot;\t&quot; + follower + &quot;\t&quot; + length);
+                context.write(k2, v2);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+}
+
+</code></pre>
+<ol start="2">
+<li>主类（入口类）<br>
+相当于一个程序的主函数，最先开始执行的地方在java目录下新建一个DataCleanJob类，在主函数设置Job作业的参数信息</li>
+</ol>
+<pre><code class="language-java">import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+ 
+
+public class DataCleanJob {
+    public static void main(String[] args) {
+        try {
+            // 运行程序指令输入错误，直接退出程序
+            if (args.length != 2) {
+                System.exit(100);
+            }
+            Configuration conf = new Configuration(); //job需要的配置参数
+            Job job = Job.getInstance(conf); //创建一个job
+            job.setJarByClass(DataCleanJob.class);
+            FileInputFormat.setInputPaths(job, new Path(args[0]));//指定输入路径（可以是文件，也可以是目录）
+            FileOutputFormat.setOutputPath(job, new Path(args[1])); //指定输出路径（只能是指定一个不存在的目录）
+            //指定map相关代码
+            job.setMapperClass(DataCleanMap.class);
+            //指定K2的类型
+            job.setMapOutputKeyClass(Text.class);
+            //指定v2的类型
+            job.setMapOutputValueClass(Text.class);
+            //设置reduce的数量，0表示禁用reduce
+            job.setNumReduceTasks(0);
+            //提交作业job
+            job.waitForCompletion(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+</code></pre>
+<h3 id="编译打包成jar包上传">编译打包成jar包上传</h3>
+<p>展开右侧的Mavan,双击clean清理一下，再双击package生成jar包，目录回多了一个target的文件夹，下面就有一个jar包程序</p>
+<h3 id="原始数据上传到hdfs">原始数据上传到HDFS</h3>
+<p>将video_rating.log/zhuboClean.jar传输到HDFS中</p>
+<pre><code>hdfs dfs -mkdir /usr/hadoop/zhubo
+hdfs dfs -put /usr/hadoop/zhubo
+hdfs dfs -put zhuboClean.jar /usr/hadoop/zhubo
+</code></pre>
+<h3 id="运行jar包程序">运行jar包程序</h3>
+<p>虚拟机中输入</p>
+<p>|  zhuboClean.jar     |  jar包名称  |<br>
+| DataCleanJob  |  主类（入口类）类名 |<br>
+|  /zhubo/data/  |  输入路径（数据所在目录) |<br>
+|  /zhubo/resultClean/ | 输出路径（必须不存在的文件夹) |</p>
+<pre><code>hadoop jar zhuboClean.jar DataCleanJob /usr/hadoop/zhubo/ /usr/hadoop/zhubo/out/
+</code></pre>
+<p>运行结束后使用HDFS命令查看结果</p>
+<pre><code>hdfs dfs -cat /usr/hadoop/zhubo/out/part-m-00000
+#出现下列字样及成功
+120010010285    285     2750    1100    1650
+120010010969    969     9590    3836    5754
+120010010742    742     7320    2928    4392
+120010010287    287     2770    1108    1662
+120010010933    933     9230    3692    5538
+120010010278    278     2680    1072    1608
+12001001035     35      250     100     150
+120010010354    354     3440    1376    2064
+120010010771    771     7610    3044    4566
+120010010932    932     9220    3688    5532
+120010010108    108     980     392     588
+120010010752    752     7420    2968    4452
+120010010356    356     3460    1384    2076
+120010010456    456     4460    1784    2676
+120010010763    763     7530    3012    4518
+120010010183    183     1730    692     1038
+120010010235    235     2250    900     1350
+120010010904    904     8940    3576    5364
+120010010201    201     1910    764     1146
+
+</code></pre>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://yyttm.github.io/post/hadoop-xue-xi-an-li-map-reduce-she-ji-hao-you-tui-jian-gong-neng/">
+              <h3 class="post-title">
+                下一篇：Hadoop学习案例——Map Reduce设计 好友推荐功能
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">温故而知新</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/yyttm" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://yyttm.github.io//atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>win10/11:定时关机方法 | 相由心生</title>
+<meta name="description" content="温故而知新">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://yyttm.github.io//favicon.ico?v=1713970146833">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://yyttm.github.io//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://yyttm.github.io/">
+        <img class="avatar" src="https://yyttm.github.io//images/avatar.png?v=1713970146833" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://yyttm.github.io/">
+        <h1 class="site-title">相由心生</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">win10/11:定时关机方法</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2023-09-21</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://yyttm.github.io/tag/XxQkWZGTGm/">
+                    教程
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p>这篇文章的灵感是因为女朋友睡觉时需要听歌或者看剧碎觉但是容易睡着导致电脑不能关机，这里给带来定时关机的方法</p>
+<!-- more -->
+<h2 id="原理br-使用关机命令-shutdown">原理<br /> 使用关机命令 shutdown</h2>
+<p><strong>win</strong>+<strong>r</strong>输入：</p>
+<pre><code>shutdown -s -t 3600
+  //时间是以秒为计量单位，3600为1小时
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://yyttm.github.io//post-images/1695308425582.png" alt="" loading="lazy"></figure>
+<h3 id="取消定时关机">取消定时关机：</h3>
+<pre><code>shutdown - a
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://yyttm.github.io//post-images/1695308518950.png" alt="" loading="lazy"></figure>
+<h3 id="查看shutdown用法及参数说明">查看shutdown用法及参数说明</h3>
+<p><strong>win+X</strong> 选择*终端(管理员)*输入：</p>
+<pre><code>shutdown
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://yyttm.github.io//post-images/1695309013711.png" alt="" loading="lazy"></figure>
+<h3 id="指定时间关机">指定时间关机</h3>
+<p><strong>win+R</strong> 输入：</p>
+<pre><code>at 22:00 shutdown -s
+ //设置为晚上22点整关机
+</code></pre>
+<!-- more -->
+<h1 id="小教程">小教程</h1>
+<p>如每次都定时为一个时间的话可以新建一个记事本输入：</p>
+<pre><code>shutdown -s -t 1800
+// 设置为半小时后关机
+</code></pre>
+<p>保存更改后缀为<strong>bat</strong>下次使用时可以直接点击就可以定时关机，不需要次次输入指令</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://yyttm.github.io/post/pu-tao/">
+              <h3 class="post-title">
+                下一篇：葡萄
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">温故而知新</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/yyttm" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://yyttm.github.io//atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
